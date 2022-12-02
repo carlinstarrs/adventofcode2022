@@ -13,25 +13,16 @@ scorer <- function(x){
 }
 
 winner <- function(player1, player2){
-  choices <- c("player1" = player1, 
-               "player2" = player2)
+  choices <- c("player1" = player1, "player2" = player2)
   
   if(player2 == player1) return("draw")
-  
-  #rock 1 defeats scissors 3
-  if(all(choices %in% c(1, 3))) return(names(choices)[which(choices == 1)])
-  
-  #scissors 3 defeats paper 2
-  if(all(choices %in% c(3, 2))) return(names(choices)[which(choices == 3)])
-  
-  #paper 2 defeats rock 1 
-  if(all(choices %in% c(2, 1))) return(names(choices)[which(choices == 2)])
-  
+  if(all(choices %in% c(1, 3))) return(names(choices)[which(choices == 1)]) #rock 1 defeats scissors 3
+  if(all(choices %in% c(3, 2))) return(names(choices)[which(choices == 3)]) #scissors 3 defeats paper 2
+  if(all(choices %in% c(2, 1))) return(names(choices)[which(choices == 2)]) #paper 2 defeats rock 1 
 }
 
 play_rps <- function(dat){
   data.frame("play" = dat) %>% 
-    rowid_to_column() %>% 
     separate(play, into = c("player1", "player2"), sep = " ") %>% 
     mutate(across(c(player1, player2), ~unlist(scorer(.x)))) %>% 
     mutate(roundwin = map2(player1, player2, winner), 
@@ -68,3 +59,4 @@ play_rps_correctly <- function(dat){
 
 play_rps_correctly(example) %>% pull(totalscore) %>% sum()
 play_rps_correctly(input) %>% pull(totalscore) %>% sum()
+
