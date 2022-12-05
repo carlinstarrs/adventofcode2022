@@ -2,7 +2,7 @@ library("tidyverse")
 
 example <- c("[ ] [D] [ ]",   
              "[N] [C] [ ]",   
-             "[Z] [M] [P]",
+             "[Z] [M] [P]", 
              "1   2   3", 
              "", 
              "move 1 from 2 to 1",
