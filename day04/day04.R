@@ -27,7 +27,7 @@ get_contained_ranges(input)
 
 get_any_overlaps <- function(dat){
   out <- map(dat, function(pairs){
-    section_assignments <- map( str_replace_all(strsplit(pairs, ",")[[1]], "-", ":"), ~eval(parse(text = .x)))
+    section_assignments <- map(str_replace_all(strsplit(pairs, ",")[[1]], "-", ":"), ~eval(parse(text = .x)))
     lengths <- map(section_assignments, ~length(.x))
     overlaps <- reduce(section_assignments, intersect)
   })
