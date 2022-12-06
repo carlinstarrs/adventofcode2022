@@ -1,4 +1,4 @@
-\library("tidyverse")
+library("tidyverse")
 
 input <- readLines("day06/input.txt")
 
