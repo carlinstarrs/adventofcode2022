@@ -68,3 +68,12 @@ imap(filepaths, function(files, dir){
 
 sum(bbs$size[bbs$size < 100000])
 
+#part 2
+filesystem_size <- 70000000
+free_space <- 30000000
+
+total_bbsize <- bbs$size[bbs$dir == "/"]
+delete_size <- free_space - (filesystem_size - total_bbsize)
+
+min(bbs$size[bbs$size > delete_size])
+
