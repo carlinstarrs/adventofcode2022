@@ -1,19 +1,4 @@
-#Consider a rope with a knot at each end; these knots mark the head and the tail of the rope. 
-#If the head moves far enough away from the tail, the tail is pulled toward the head.
-
-
-#you should be able to model the positions of the knots on a two-dimensional grid
-
-#Then, by following a hypothetical series of motions (your puzzle input) for the head, you can determine how the tail will move.
-
-#in fact, the head (H) and tail (T) must always be touching (diagonally adjacent and even overlapping both count as touching):
-
-#If the head is ever two steps directly up, down, left, or right from the tail, the tail must also move one step in that direction so it remains close enough:
-
-#Otherwise, if the head and tail aren't touching and aren't in the same row or column, the tail always moves one step diagonally to keep up:
-
-
-#You just need to work out where the tail goes as the head follows a series of motions. Assume the head and the tail both start at the same position, overlapping.
+library("tidyverse")
 
 example <- c("R 4",
              "U 4",
@@ -28,39 +13,35 @@ example <- c("R 4",
 
 input <- readLines("day09/input.txt") 
 
-dat <- example
-
-dat <- input
-moves <- dat %>% 
-  strsplit(" ") %>% 
-  unlist() %>% 
-  matrix(ncol = 2, byrow = TRUE) 
-
-head_coords <- matrix(c(0, 0), ncol = 2)
-
-#translate matrix to coordinates
-walk2(moves[,1], as.numeric(moves[,2]), function(direction, distance){
-  x <- tail(head_coords, 1)[1]
-  y <- tail(head_coords, 1)[2]
+get_headcoords <- function(dat){
+  moves <- dat %>% 
+    strsplit(" ") %>% 
+    unlist() %>% 
+    matrix(ncol = 2, byrow = TRUE) 
   
-  coords <- case_when(direction == "R" ~ c(x:(x-distance), rep(y, distance + 1)),
-                      direction == "L" ~ c(x:(x+distance), rep(y, distance + 1)),
-                      direction == "U" ~ c(rep(x, distance + 1), y:(y-distance)),
-                      direction == "D" ~ c(rep(x, distance + 1), y:(y+distance)))
+  head_coords <- matrix(c(0, 0), ncol = 2)
   
-  coords <- matrix(coords, ncol = 2)[-1,]
-  head_coords <<- rbind(head_coords, coords)
-})
-
-tail_coords <- matrix(c(0, 0), ncol = 2)
-
-walk2(head_coords[,1], head_coords[,2], function(headx, heady){
-  tailx <- tail(tail_coords, 1)[1]
-  taily <- tail(tail_coords, 1)[2]
+  #translate motions to coordinates
+  walk2(moves[,1], as.numeric(moves[,2]), function(direction, distance){
+    x <- tail(head_coords, 1)[1]
+    y <- tail(head_coords, 1)[2]
+    
+    coords <- case_when(direction == "R" ~ c(x:(x-distance), rep(y, distance + 1)),
+                        direction == "L" ~ c(x:(x+distance), rep(y, distance + 1)),
+                        direction == "U" ~ c(rep(x, distance + 1), y:(y-distance)),
+                        direction == "D" ~ c(rep(x, distance + 1), y:(y+distance)))
+    
+    coords <- matrix(coords, ncol = 2)[-1,]
+    head_coords <<- rbind(head_coords, coords)
+  })
   
+  return(head_coords)
+}
+
+move_tail <- function(headx, heady, tailx, taily){
   distx <- abs(headx-tailx) 
   disty <- abs(heady-taily)
-
+  
   if(distx + disty < 2){ #don't move
     next_tailx <- tailx
     next_taily <- taily
@@ -79,14 +60,34 @@ walk2(head_coords[,1], head_coords[,2], function(headx, heady){
     next_taily <- taily
   }
   
-  coords <-  matrix(c(next_tailx, next_taily), ncol = 2)
+  matrix(c(next_tailx, next_taily), ncol = 2)
+}
+
+
+stretch_rope <- function(dat, starting_knots){
+  knots <- map(1:starting_knots, ~matrix(c(0, 0), ncol = 2))
+  knots[[1]] <- get_headcoords(dat)
   
-  tail_coords <<- rbind(tail_coords, coords)
-})
+  walk(1:nrow(knots[[1]]), function(i){
+    map(2:length(knots), function(knot){
+      head_coords <- knots[[knot-1]]
+      tail_coords <- knots[[knot]]
+      
+      knots[[knot]] <<- rbind(knots[[knot]], move_tail(head_coords[i,1], head_coords[i,2], tail_coords[i,1], tail_coords[i,2]))
+    })
+  })
+  
+  tibble(tail(knots, 1)[[1]]) %>% 
+    unique() %>% 
+    nrow()
+}
+
+stretch_rope(example, 2)
+stretch_rope(input, 2)
+stretch_rope(input, 10)
 
 
-tibble(tail_coords) %>% 
-  unique() %>% 
-  nrow()
+
+
 
 
