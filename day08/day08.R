@@ -9,7 +9,7 @@ example <- map2(example, 1:length(example), ~tibble(!!paste0("V", .y) := strspli
 
 width <- nchar(readLines("day08/input.txt", n = 1))
 
-input <- read.fwf("day08/input.txt", widths = rep(1, width))
+input <- read.fwf("day08/input.txt", widths = rep(1, width)) %>% as.matrix()
 
 tree_checker <- function(dat){
   width <- ncol(dat)
